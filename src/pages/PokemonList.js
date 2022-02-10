@@ -98,6 +98,12 @@ function PokemonList() {
   )
 }
 
-const capzFirst = (string) => string.charAt(0).toUpperCase() + string.slice(1);
+const capzFirst = (string) => {
+  //change "-" to space
+  string = string.replace(/-/g, ' ');
+
+  //capslock each word
+  return string.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
 
 export default PokemonList;
