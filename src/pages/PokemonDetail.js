@@ -6,7 +6,7 @@ import {
 
 import React from 'react';
 
-import { useEffect } from 'react';
+import { useEffect, useContext } from 'react';
 import { useNavigate } from "react-router-dom";
 
 //material-ui
@@ -16,8 +16,11 @@ import * as Muicon from '@mui/icons-material';
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 
-export default function PokemonDetail() {
+//global state
+import { GlobalState } from '../App';
 
+export default function PokemonDetail() {
+  const globalState = useContext(GlobalState);
   let [pokemon, setPokemon] = React.useState();
   let [isCatching, setIsCatching] = React.useState({
     popUp: false,
@@ -87,7 +90,17 @@ export default function PokemonDetail() {
     let input = {
       id: Math.random(),
       name: pokemon.name,
-      nickname: nickname || capzFirst(pokemon.name),
+      nickname: nickname,
+    }
+
+    if(!checkUniqueNickname(input.nickname)) {
+      alert('Nickname is already taken');
+      return;
+    }
+
+    if(!input.nickname) {
+      alert('Please enter a nickname!');
+      return;
     }
 
     if(localStorage.getItem('ownedPokemon') === null) {
@@ -105,15 +118,20 @@ export default function PokemonDetail() {
       );
     }
 
-    // console.log(
-    //   {
-    //   id: Math.random(),
-    //   name: pokemon.name,
-    //   nickname: nickname || capzFirst(pokemon.name),
-    //   }
-    // )
-
     closeModal();
+  }
+
+  const checkUniqueNickname = (nickname) => {
+    //check unique nickname
+    let ownedPokemon = JSON.parse(localStorage.getItem('ownedPokemon')) || [];
+    let isUnique = true;
+    for(let item of ownedPokemon) {
+      if(item.nickname === nickname) {
+        isUnique = false;
+        break;
+      }
+    }
+    return isUnique;
   }
 
   const closeModal = () => {
@@ -157,7 +175,7 @@ export default function PokemonDetail() {
                     </Mui.Typography>
 
                     <br />
-                    <Mui.IconButton onClick={() => navigate("/")} size="large">
+                    <Mui.IconButton onClick={() => navigate(globalState.prevPageState)} size="large">
                       <Muicon.ArrowBackIos css={css`color: #f44336;`} fontSize="large" />
                       <Mui.Typography variant="body2" color="textSecondary" component="p">Back</Mui.Typography>           
                     </Mui.IconButton> 

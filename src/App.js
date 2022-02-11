@@ -17,17 +17,18 @@ import PokemonList from './pages/PokemonList'
 import PokemonDetail from './pages/PokemonDetail';
 import MyPokemonList from './pages/MyPokemonList';
 
-import {useState, createContext, useEffect} from 'react'
+import {useState, createContext} from 'react'
 
 export const GlobalState = createContext()
 
 function App() {
   const [pageState, setPageState] = useState(1)
+  const [prevPageState, setPrevPageState] = useState('') //for back button
 
   return (
     <div className="App">
         <Router>
-          <GlobalState.Provider value={{pageState, setPageState}}>
+          <GlobalState.Provider value={{pageState, setPageState, prevPageState, setPrevPageState}}>
             <Header />
             <br /><br /><br />          
             <Mui.Container maxWidth="xl">

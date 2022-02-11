@@ -62,14 +62,11 @@ function PokemonList() {
   }
 
   const toDetail = (url) => {
+    globalState.setPrevPageState('/');
     navigate(`/detail/${url}`);
   }
 
   const pokemonPerPage = 12;
-  const owned = {
-    "bulbasaur": 12,
-    "venusaur": 2,
-  }
 
   useEffect(() => {    
     getPokemons(pokemonPerPage, (globalState.pageState*12)-12)
@@ -88,7 +85,12 @@ function PokemonList() {
                   <Mui.Paper onClick={() => toDetail(pokemon.name)} css={css`padding:2px; cursor:pointer; &:hover{background-color:#F5F5F5}`}>
                     <p>{capzFirst(pokemon.name)}</p>
                     <img alt={pokemon.name} src={pokemon.image} />
-                    <p>Owned: {owned[pokemon.name] || 0}</p>
+                    <p>Owned: &nbsp;
+                      {
+                        localStorage.getItem('ownedPokemon') ? JSON.parse(localStorage.getItem('ownedPokemon')).filter(item => item.name === pokemon.name).length
+                        : 0
+                      }
+                    </p>
                   </Mui.Paper>
                 </Mui.Grid>
             )
