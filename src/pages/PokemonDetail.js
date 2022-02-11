@@ -6,7 +6,7 @@ import {
 
 import React from 'react';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 
 //material-ui
@@ -18,8 +18,13 @@ import { css } from '@emotion/react';
 
 export default function PokemonDetail() {
 
-
   let [pokemon, setPokemon] = React.useState();
+  let [isCatching, setIsCatching] = React.useState({
+    popUp: false,
+    isCatching: false,
+    isCaught: false,
+  });
+  let [nickname, setNickname] = React.useState('');
 
   const pokemons = new ApolloClient({
     uri: 'https://graphql-pokeapi.graphcdn.app/',
@@ -51,7 +56,7 @@ export default function PokemonDetail() {
       `
     })
     .then(res => {
-      console.log(res.data.pokemon)
+      // console.log(res.data.pokemon)
       setPokemon(res.data.pokemon);
     })
     .catch(error => {
@@ -61,15 +66,74 @@ export default function PokemonDetail() {
 
   const navigate = useNavigate();  
 
+  const handleCatch = () => {
+    setNickname('');
+    setIsCatching({
+      ...isCatching,
+      popUp: true,
+      isCatching: true,
+    })
+    
+    setTimeout(() => {
+      setIsCatching({
+        popUp: true,
+        isCatching: false,
+        isCaught: Math.random() > 0.5,
+      })
+    }, 2000);
+  }
+
+  const handleSave = () => {
+    let input = {
+      id: Math.random(),
+      name: pokemon.name,
+      nickname: nickname || capzFirst(pokemon.name),
+    }
+
+    if(localStorage.getItem('ownedPokemon') === null) {
+      localStorage.setItem('ownedPokemon', 
+        JSON.stringify([input])        
+      );
+    } else {
+      localStorage.setItem('ownedPokemon',
+        JSON.stringify(
+          [ 
+            ...JSON.parse(localStorage.getItem('ownedPokemon')),
+            input
+          ]
+        )
+      );
+    }
+
+    // console.log(
+    //   {
+    //   id: Math.random(),
+    //   name: pokemon.name,
+    //   nickname: nickname || capzFirst(pokemon.name),
+    //   }
+    // )
+
+    closeModal();
+  }
+
+  const closeModal = () => {
+      setIsCatching({
+        popUp: false,
+        isCatching: false,
+        isCaught: false,
+      })
+  };
+
   useEffect(() => {
     getPokemonDetail(window.location.pathname.split('/')[2]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
   return (
       <>
           <h1>Detail</h1>
         {
-          !pokemon ? <Mui.CircularProgress /> :
+          !pokemon ? <Mui.CircularProgress style={{color: "#f44336"}} /> :
           <>
             <Mui.Card>
               <Mui.CardHeader title={capzFirst(pokemon.name)} />
@@ -97,7 +161,7 @@ export default function PokemonDetail() {
                       <Muicon.ArrowBackIos css={css`color: #f44336;`} fontSize="large" />
                       <Mui.Typography variant="body2" color="textSecondary" component="p">Back</Mui.Typography>           
                     </Mui.IconButton> 
-                    <Mui.IconButton size="large"  >
+                    <Mui.IconButton onClick={() => handleCatch()} size="large"  >
                       <Muicon.CatchingPokemon css={css`color: #f44336;`}  fontSize="large" /> 
                       <Mui.Typography variant="body2" color="textSecondary" component="p">Catch!</Mui.Typography>
                     </Mui.IconButton>
@@ -108,7 +172,50 @@ export default function PokemonDetail() {
 
             </Mui.Card>
             
-            {/* <p>{capzFirst(pokemon.name)}</p> */}
+            {/* modal */}
+            <Mui.Modal
+              style={{display:'flex',alignItems:'center',justifyContent:'center'}}
+              open={isCatching.popUp}
+              aria-labelledby="parent-modal-title"
+              aria-describedby="parent-modal-description"
+            >
+              {
+                isCatching.isCatching ?
+                <Mui.Card css={css`text-align: center;`}>
+                  <Mui.CardHeader title="Catching Pokemon..." />
+                  <Mui.CardContent>
+                    <Mui.CircularProgress style={{color: "#f44336"}} />
+                  </Mui.CardContent>
+                </Mui.Card>
+                :
+                isCatching.isCaught ?
+                <Mui.Card css={css`text-align: center;`}>
+                  <Mui.CardHeader title={`Gotcha! ${capzFirst(pokemon.name)} was caught!`} />
+                  <Mui.CardContent>
+                    <Mui.FormControl>
+                      <Mui.InputLabel htmlFor="nickname">Nickname</Mui.InputLabel>
+                      <Mui.Input onChange={(e) => setNickname(e.target.value)} id="nickname" aria-describedby="my-helper-text" />
+                    </Mui.FormControl>
+                    {/* save button icon */}
+                    <Mui.IconButton size="small" onClick={() => handleSave()}>
+                      <Muicon.Save css={css`color: #f44336;`} fontSize="large" />
+                    </Mui.IconButton>
+                  </Mui.CardContent>
+                </Mui.Card>
+                :
+                <Mui.Card css={css`text-align: center;`}>
+                  <Mui.CardHeader title={`Catching failed!`} />
+                  <Mui.CardContent>
+                    {/* close btn */}
+                    <Mui.IconButton onClick={() => closeModal()} size="large">
+                      <Muicon.Close css={css`color: #f44336;`} fontSize="large" />
+                      <Mui.Typography variant="body2" color="textSecondary" component="p">Close</Mui.Typography>
+                    </Mui.IconButton>
+                  </Mui.CardContent>
+                </Mui.Card>
+              }
+            </Mui.Modal>
+
           </>
         }
       </>

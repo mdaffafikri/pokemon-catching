@@ -4,7 +4,7 @@ import {
   gql
 } from "@apollo/client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useNavigate } from "react-router-dom";
 
 //material-ui
@@ -12,6 +12,9 @@ import * as Mui from '@mui/material';
 
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
+
+//global state
+import { GlobalState } from '../App';
 
 function PokemonList() {
   let [pokemonList, setPokemonList] = useState([]);
@@ -51,8 +54,11 @@ function PokemonList() {
     });
   }
 
+  const globalState = useContext(GlobalState);
+
   const changePage = (page) => {
     getPokemons(pokemonPerPage, (page*12)-12);
+    globalState.setPageState(page);
   }
 
   const toDetail = (url) => {
@@ -60,9 +66,13 @@ function PokemonList() {
   }
 
   const pokemonPerPage = 12;
+  const owned = {
+    "bulbasaur": 12,
+    "venusaur": 2,
+  }
 
   useEffect(() => {    
-    getPokemons(pokemonPerPage, 0)
+    getPokemons(pokemonPerPage, (globalState.pageState*12)-12)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
@@ -78,7 +88,7 @@ function PokemonList() {
                   <Mui.Paper onClick={() => toDetail(pokemon.name)} css={css`padding:2px; cursor:pointer; &:hover{background-color:#F5F5F5}`}>
                     <p>{capzFirst(pokemon.name)}</p>
                     <img alt={pokemon.name} src={pokemon.image} />
-                    <p>Owned: 0</p>
+                    <p>Owned: {owned[pokemon.name] || 0}</p>
                   </Mui.Paper>
                 </Mui.Grid>
             )
@@ -89,7 +99,7 @@ function PokemonList() {
         {/* pagination */}
         <br />
         <Mui.Stack spacing={2}>
-          <Mui.Pagination onChange={(e, page) => changePage(page)} count={75} />
+          <Mui.Pagination page={globalState.pageState} onChange={(e, page) => changePage(page)} count={75} />
         </Mui.Stack>
         
         {/* <button onClick={() => getPokemons(pokemonPerPage, page.previous)}>Previous</button>

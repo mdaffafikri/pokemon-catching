@@ -17,21 +17,29 @@ import PokemonList from './pages/PokemonList'
 import PokemonDetail from './pages/PokemonDetail';
 import MyPokemonList from './pages/MyPokemonList';
 
+import {useState, createContext, useEffect} from 'react'
+
+export const GlobalState = createContext()
+
 function App() {
+  const [pageState, setPageState] = useState(1)
+
   return (
     <div className="App">
         <Router>
-          <Header />
-          <br /><br /><br />          
-          <Mui.Container maxWidth="xl">
-            <Routes>
-              <Route exact path="/" element={<PokemonList/>}/>
-              <Route exact path="/detail/:url" element={<PokemonDetail/>}/>
-              <Route exact path="/my-list" element={<MyPokemonList/>}/>
-            </Routes>
-          </Mui.Container>
-          <br /><br /><br /><br />
-          <Navigation />
+          <GlobalState.Provider value={{pageState, setPageState}}>
+            <Header />
+            <br /><br /><br />          
+            <Mui.Container maxWidth="xl">
+              <Routes>
+                <Route exact path="/" element={<PokemonList/>}/>
+                <Route exact path="/detail/:url" element={<PokemonDetail/>}/>
+                <Route exact path="/my-list" element={<MyPokemonList/>}/>
+              </Routes>
+            </Mui.Container>
+            <br /><br /><br /><br />
+            <Navigation />
+          </GlobalState.Provider>
         </Router>
 
     </div>
